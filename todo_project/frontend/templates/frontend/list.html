@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TO DO</title>
+
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;1,100;1,300;1,400;1,500&display=swap" rel="stylesheet">
+    
+    <style>
+        html {
+            height: 100%;
+        }
+        body {
+            background-attachment: fixed;
+            height: 100%;
+            margin: 0;
+            background-repeat: no-repeat;
+            background: linear-gradient(to left top, 
+                #d16ba5, #c777b9, #ba83ca, 
+                #aa8fd8, #9a9ae1, #8aa7ec, 
+                #79b3f4, #69bff8, #52cffe, 
+                #41dfff, #46eefa, #5ffbf1);
+            font-family: 'Roboto', sans-serif;
+        }
+
+        #task-container{
+            max-width:400px;
+            margin:0 auto;
+            box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+            background-color: #fff;
+
+            margin-top:20px;
+            margin-bottom:20p           
+            justify-content: space-around;
+            align-items: flex-start;
+            border-radius: 20px;
+		}
+        #form-wrapper{
+            height: 20px;
+            position: -webkit-sticky;
+            position: sticky;
+            top: 0rem;
+            border-bottom: 1px solid  #e9e9e9;
+            background-color: #fff;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+            padding:40px;
+            border-radius: 20px;
+
+		}
+        #title, #submit {
+            height: 40px;
+            position: relative;
+            bottom: 15px;
+        }
+        #submit{
+		    background-color: #d16ba5;
+		    border-radius: 8px;
+		    border:0;
+		    color: #fff;
+            margin-left: 15px;
+		}
+
+        .edit, .delete {
+            border-radius: 10px;
+            position: relative;
+            bottom: 2px;
+            height: 20px;
+            padding-bottom: 22px;
+            margin: 0 5px 10px 5px;
+        }
+
+        .flex-wrapper{
+			display: flex;
+		}
+        .task-wrapper{
+            height: 45px;
+		  	margin:5px;
+		  	padding:10px;
+		  	cursor: pointer;
+		  	border-bottom: 1px solid  #e9e9e9;
+		  	color: #686868;
+            
+			}
+        .form-control {
+            border-radius: 8px;
+        }
+
+    </style>
+
+</head>
+<body>
+    <div class="container">
+
+        <div id="task-container">
+            <div id="form-wrapper">
+                <form id="form">
+                    <div class="flex-wrapper">
+                        <div style="flex: 6">
+                            <input id="title" class="form-control" type="text" name="title" placeholder="Add task">
+                        </div>
+                        <div style="flex: 1">
+                            <input id="submit" class="btn" type="submit" >
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div id="list-wrapper">
+            
+            </div>	
+        </div>
+
+    </div>
+    
+
+    <script type="text/javascript">
+    
+        function buildList() {
+            let wrapper = document.getElementById('list-wrapper');
+            //wrapper.innerHTML = '';
+
+            let title = document.getElementById('title')
+            title.value = '';
+
+            let url = 'http://127.0.0.1:8000/api/task-list/'
+
+            fetch(url)
+            .then((resp) => resp.json())
+            .then(function(data) {
+                console.log("Data: ", data);
+
+                let list = data;
+
+                for (let i in list) {
+
+                    try{
+                        document.getElementById(`task-row-${i}`).remove()
+                    }catch(err){
+
+                    }
+
+                    let title = `<span class="title">${list[i].title}</span>`
+                    let checkbox = `<input class="checkbox" type="checkbox">`
+
+                    if (list[i].completed === true) {
+                        title = `<strike class="title">${list[i].title}</strike>`
+                        checkbox = `<input class="checkbox" type="checkbox" checked>`
+                    }
+
+                    let item = `
+                        <div id="task-row-${i}" class="task-wrapper flex-wrapper">
+                            <div style="flex:1">
+                                ${checkbox}
+                            </div>
+                            <div style="flex:7">
+                                ${title}
+                            </div>
+                            <div style="flex:1">
+                                <button class="btn btn-sm btn-outline-info edit">Edit</button>
+                            </div>
+                            <div style="flex:1">
+                                <button class="btn btn-sm btn-outline-dark delete">Delete</button>
+                            </div>
+                        </div>
+                    
+                    `
+                    wrapper.innerHTML += item;
+                }
+
+                if (list_snapshot.length > list.length){
+                    for(let i = list.length; i < list_snapshot.length; i++){
+                        document.getElementById(`task-row-${i}`).remove()
+                    }
+                }
+
+                list_snapshot = list
+
+                for (let i in list) {
+                    var editBtn = document.getElementsByClassName('edit')[i];
+                    var deleteBtn = document.getElementsByClassName('delete')[i];
+                    var checkBox = document.getElementsByClassName('checkbox')[i];
+                    var title = document.getElementsByClassName('class')[i];
+
+                    editBtn.addEventListener('click', function() {
+                        editItem(list[i]);
+                    });
+                    deleteBtn.addEventListener('click', function() {
+                        deleteItem(list[i]);
+                    });
+                    checkBox.addEventListener('click', function(){
+                        strikeUnstrike(list[i]);
+                    });
+                }
+
+            })
+        }
+
+        function editItem(item) {
+            console.log("item clicked: ", item)
+            activeItem = item
+            document.getElementById('title').value = activeItem.title
+        }
+
+        function deleteItem(item) {
+            console.log('delete clicked: ', item.id)
+
+            fetch(`http://127.0.0.1:8000/api/task-delete/${item.id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-type': 'application/json',
+                }
+            }).then((response) => buildList())
+        }
+
+        function strikeUnstrike(item){
+            console.log(`item: ${item.id} striked-unstriked`);
+
+            item.completed = !item.completed
+            fetch(`http://127.0.0.1:8000/api/task-update/${item.id}`, {
+                method: 'POST',
+                headers: {
+                    'Content-type': 'application/json',
+                },
+                body: JSON.stringify({'title': item.title, 'completed': item.completed})
+            }).then((response) => buildList())
+        }
+
+        let activeItem = null
+        let list_snapshot = []
+
+        let form = document.getElementById('form-wrapper')
+        form.addEventListener('submit', function(e) {
+            e.preventDefault()
+            console.log('form submited')
+
+            let url = 'http://127.0.0.1:8000/api/task-create/'
+            
+            if (activeItem !== null) {
+                url = `http://127.0.0.1:8000/api/task-update/${activeItem.id}`
+                activeItem = null                 
+            }
+
+            let title = document.getElementById('title').value
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-type': 'application/json',
+
+                },
+                body: JSON.stringify({'title': title})
+            }
+            ).then(function(response) {
+                buildList();
+            })
+        })
+
+
+        buildList();
+    
+    </script>
+</body>
+</html>

@@ -1,2 +1,2 @@
-cd todo_project
+python manage.py migrate
 python manage.py runserver

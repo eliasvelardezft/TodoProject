@@ -196,11 +196,11 @@
                     wrapper.innerHTML += item;
                 }
 
-                // if (task_list_snapshot.length > list.length){
-                //     for(let i = list.length; i < task_list_snapshot.length; i++){
-                //         document.getElementById(`task-row-${i}`).remove()
-                //     }
-                // }
+                if (task_list_snapshot.length > list.length){
+                    for(let i = list.length; i < task_list_snapshot.length; i++){
+                        document.getElementById(`task-row-${i}`).remove()
+                    }
+                }
 
                 task_list_snapshot = list
 
@@ -213,7 +213,8 @@
                         editItem(list[i]);
                     });
                     deleteBtn.addEventListener('click', function() {
-                        deleteItem(list[i]);
+                        deleteItem(list[i], folder);
+                        console.log('item deleted')
                     });
                     checkBox.addEventListener('click', function(){
                         strikeUnstrike(list[i], folder);
@@ -230,14 +231,16 @@
         }
 
         function deleteItem(item, folder) {
-            console.log('delete clicked: ', item.id)
+            console.log(`deleted item ${item.title} from folder ${folder.title}`)
 
             fetch(`http://127.0.0.1:8000/api/task-delete/${item.id}`, {
                 method: 'DELETE',
                 headers: {
                     'Content-type': 'application/json',
                 }
-            }).then((response) => buildTaskList(folder))
+            }).then((response) => {
+                buildTaskList(folder);
+            })
         }
 
         function strikeUnstrike(item, folder){

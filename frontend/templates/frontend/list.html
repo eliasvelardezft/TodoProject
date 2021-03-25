@@ -136,16 +136,19 @@
     </div>
 
 
-    <!-- ******** Task folder section (populated in the script) ******** -->
+    <!-- ******** Task folder section ******** -->
     <div class="container task-section" id="task-section">
-
-
+        <!-- (populated in the script) -->
+        
     </div>
     
 
     <script type="text/javascript">
     
         function buildTaskList(folder) {
+            // This function fetches the API created with the django rest framework
+            // and populates the task-section html depending on the folder passed as a parameter
+
             let wrapper = document.getElementById('list-wrapper');
 
             let title = document.getElementById('title')
@@ -203,6 +206,9 @@
                 }
 
                 task_list_snapshot = list
+
+                // Here I add the event listeners to the buttons in the task section.
+                // this eventlisteners call functions that comunicate with the api
 
                 for (let i in list) {
                     var editBtn = document.getElementsByClassName('edit')[i];
@@ -266,6 +272,11 @@
 
 
         function buildFolderList() {
+            // This is the function called when the script runs, 
+            // it creates the folder list and adds events listeners to
+            // the different buttons for submiting, deleting and accessing the
+            // different folders
+
             let wrapper = document.getElementById('folder-list-wrapper')
 
             let url = 'http://127.0.0.1:8000/api/folder-list/'
@@ -340,6 +351,9 @@
         }
 
         function viewFolderItems(folder){
+            // Here I display the tasks contained in the folder that was selected
+            // and show call the buildtasklist() function corresponding to the current folder.
+
             let placeholder = `Add task to ${folder.title}`
             let section = document.getElementById('task-section')
             let wrapper = `
@@ -396,6 +410,8 @@
 
         let folder_list_snapshot = []
         let activeFolder = null
+
+        // This is the part where the folders are created, using the POST method with fetch()
 
         let folderForm = document.getElementById('folder-form-wrapper')
         folderForm.addEventListener('submit', function(e){

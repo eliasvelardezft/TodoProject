@@ -28,19 +28,19 @@
             font-family: 'Roboto', sans-serif;
         }
 
-        #task-container{
+        #task-container, #folder-container{
             max-width:400px;
-            margin:0 auto;
             box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
             background-color: #fff;
-
+            margin-left: 0;
+            margin-right: 0;
             margin-top:20px;
-            margin-bottom:20p           
-            justify-content: space-around;
+            margin-bottom:20px;           
             align-items: flex-start;
             border-radius: 20px;
 		}
-        #form-wrapper{
+    
+        #form-wrapper, #folder-form-wrapper{
             height: 20px;
             position: -webkit-sticky;
             position: sticky;
@@ -52,12 +52,12 @@
             border-radius: 20px;
 
 		}
-        #title, #submit {
+        #title, #submit, #folder-title, #folder-submit {
             height: 40px;
             position: relative;
             bottom: 15px;
         }
-        #submit{
+        #submit, #folder-submit{
 		    background-color: #d16ba5;
 		    border-radius: 8px;
 		    border:0;
@@ -65,7 +65,12 @@
             margin-left: 15px;
 		}
 
-        .edit, .delete {
+        .container {
+            position: absolute;
+            left: 20px;
+        }
+
+        .edit, .delete, .view-items, .delete-folder {
             border-radius: 10px;
             position: relative;
             bottom: 2px;
@@ -73,8 +78,11 @@
             padding-bottom: 22px;
             margin: 0 5px 10px 5px;
         }
+        .view-items {
+            width: 100px;
+        }
 
-        .flex-wrapper{
+        .flex-wrapper, .folder-flex-wrapper{
 			display: flex;
 		}
         .task-wrapper{
@@ -89,38 +97,53 @@
         .form-control {
             border-radius: 8px;
         }
+        .folder-section {
+
+        }
+        .task-section {
+            position: relative;
+            left: 600px;
+        }
 
     </style>
 
 </head>
 <body>
-    <div class="container">
+    <!-- ******** Task folder section ******** -->
 
-        <div id="task-container">
-            <div id="form-wrapper">
-                <form id="form">
-                    <div class="flex-wrapper">
+    <div class="container folder-section">
+
+        <div id="folder-container">
+            <div id="folder-form-wrapper">
+                <form id="folder-form">
+                    <div class="folder-flex-wrapper">
                         <div style="flex: 6">
-                            <input id="title" class="form-control" type="text" name="title" placeholder="Add task">
+                            <input id="folder-title" class="form-control" type="text" name="title" placeholder="Add folder">
                         </div>
                         <div style="flex: 1">
-                            <input id="submit" class="btn" type="submit" >
+                            <input id="folder-submit" class="btn" type="submit" >
                         </div>
                     </div>
                 </form>
             </div>
 
-            <div id="list-wrapper">
+            <div id="folder-list-wrapper">
             
             </div>	
         </div>
+
+    </div>
+
+
+    <div class="container task-section" id="task-section">
+
 
     </div>
     
 
     <script type="text/javascript">
     
-        function buildList() {
+        function buildTaskList() {
             let wrapper = document.getElementById('list-wrapper');
             //wrapper.innerHTML = '';
 
@@ -172,19 +195,18 @@
                     wrapper.innerHTML += item;
                 }
 
-                if (list_snapshot.length > list.length){
-                    for(let i = list.length; i < list_snapshot.length; i++){
+                if (task_list_snapshot.length > list.length){
+                    for(let i = list.length; i < task_list_snapshot.length; i++){
                         document.getElementById(`task-row-${i}`).remove()
                     }
                 }
 
-                list_snapshot = list
+                task_list_snapshot = list
 
                 for (let i in list) {
                     var editBtn = document.getElementsByClassName('edit')[i];
                     var deleteBtn = document.getElementsByClassName('delete')[i];
                     var checkBox = document.getElementsByClassName('checkbox')[i];
-                    var title = document.getElementsByClassName('class')[i];
 
                     editBtn.addEventListener('click', function() {
                         editItem(list[i]);
@@ -214,7 +236,7 @@
                 headers: {
                     'Content-type': 'application/json',
                 }
-            }).then((response) => buildList())
+            }).then((response) => buildTaskList())
         }
 
         function strikeUnstrike(item){
@@ -227,14 +249,149 @@
                     'Content-type': 'application/json',
                 },
                 body: JSON.stringify({'title': item.title, 'completed': item.completed})
-            }).then((response) => buildList())
+            }).then((response) => buildTaskList())
         }
 
         let activeItem = null
-        let list_snapshot = []
+        let task_list_snapshot = []
 
-        let form = document.getElementById('form-wrapper')
-        form.addEventListener('submit', function(e) {
+        // let form = document.getElementById('form-wrapper')
+        // form.addEventListener('submit', function(e) {
+        //     e.preventDefault()
+        //     console.log('form submited')
+
+        //     let url = 'http://127.0.0.1:8000/api/task-create/'
+            
+        //     if (activeItem !== null) {
+        //         url = `http://127.0.0.1:8000/api/task-update/${activeItem.id}`
+        //         activeItem = null                 
+        //     }
+
+        //     let title = document.getElementById('title').value
+
+        //     fetch(url, {
+        //         method: 'POST',
+        //         headers: {
+        //             'Content-type': 'application/json',
+
+        //         },
+        //         body: JSON.stringify({'title': title})
+        //     }
+        //     ).then(function(response) {
+        //         buildTaskList();
+        //     })
+        // })
+
+        // ********** Task folders section **********
+
+
+
+
+
+
+
+
+
+
+
+        function buildFolderList() {
+            let wrapper = document.getElementById('folder-list-wrapper')
+
+            let url = 'http://127.0.0.1:8000/api/folder-list/'
+
+            fetch(url)
+            .then((resp) => resp.json())
+            .then(function(data) {
+                console.log("Data: ", data);
+
+                let list = data;
+
+                for (let i in list) {
+
+                    try{
+                        document.getElementById(`folder-row-${i}`).remove()
+                    }catch(err){
+
+                    }
+
+                    let title = `<span class="folder-title">${list[i].title}</span>`
+
+                    let item = `
+                        <div id="folder-row-${i}" class="task-wrapper folder-flex-wrapper">
+                            <div style="flex:7">
+                                ${title}
+                            </div>
+                            <div style="flex:1">
+                                <button class="btn btn-sm btn-outline-info view-items">View items</button>
+                            </div>
+                            <div style="flex:1">
+                                <button class="btn btn-sm btn-outline-dark delete-folder">Delete</button>
+                            </div>
+                        </div>
+                    
+                    `
+                    wrapper.innerHTML += item;
+                }
+
+                if (folder_list_snapshot.length > list.length){
+                    for(let i = list.length; i < folder_list_snapshot.length; i++){
+                        document.getElementById(`folder-row-${i}`).remove()
+                    }
+                }
+
+                folder_list_snapshot = list
+
+                for (let i in list) {
+                    var viewItemsBtn = document.getElementsByClassName('view-items')[i];
+                    var deleteBtn = document.getElementsByClassName('delete-folder')[i];
+
+
+                    deleteBtn.addEventListener('click', function() {
+                        deleteFolder(list[i]);
+                    });
+                    viewItemsBtn.addEventListener('click', function(){
+                        viewFolderItems(list[i]);
+                    });
+                }
+
+            })
+        }
+        function deleteFolder(folder) {
+            console.log('delete clicked: ', folder.id)
+
+            fetch(`http://127.0.0.1:8000/api/folder-delete/${folder.id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-type': 'application/json',
+                }
+            }).then((response) => buildFolderList())
+        }
+
+        function viewFolderItems(folder){
+            let section = document.getElementById('task-section')
+            let wrapper = `
+            <div id="task-container">
+            <div id="form-wrapper">
+                <form id="form">
+                    <div class="flex-wrapper">
+                        <div style="flex: 6">
+                            <input id="title" class="form-control" type="text" name="title" placeholder="Add task">
+                        </div>
+                        <div style="flex: 1">
+                            <input id="submit" class="btn" type="submit" >
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div id="list-wrapper">
+            
+            </div>	
+            </div>
+            `
+            section.innerHTML = wrapper;
+            let form = document.getElementById('form-wrapper')
+            form.addEventListener('submit', function(e) {
             e.preventDefault()
             console.log('form submited')
 
@@ -256,12 +413,47 @@
                 body: JSON.stringify({'title': title})
             }
             ).then(function(response) {
-                buildList();
+                buildTaskList();
+            })
+        })
+            buildTaskList();
+        }
+
+
+        let folder_list_snapshot = []
+        let activeFolder = null
+
+        let folderForm = document.getElementById('folder-form-wrapper')
+        folderForm.addEventListener('submit', function(e){
+
+            e.preventDefault()
+            console.log("folder submited")
+
+            let url = 'http://127.0.0.1:8000/api/folder-create/'
+
+            if (activeFolder !== null){
+                url = `http://127.0.0.1:8000/api/folder-update/${activeFolder.id}`
+                activeFolder = null
+            }
+
+            let title = document.getElementById('folder-title').value
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-type': 'application/json',
+
+                },
+                body: JSON.stringify({'title': title})
+            }
+            ).then(function(response) {
+                buildFolderList();
             })
         })
 
+        buildFolderList();
 
-        buildList();
+        
     
     </script>
 </body>

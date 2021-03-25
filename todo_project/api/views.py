@@ -73,8 +73,6 @@ def taskDelete(request, pk):
     return Response('Item succesfully deleted!')
 
 
-
-
 ## This is the views for handling the folders
 
 

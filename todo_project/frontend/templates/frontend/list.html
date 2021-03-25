@@ -410,7 +410,7 @@
                     'Content-type': 'application/json',
 
                 },
-                body: JSON.stringify({'title': title})
+                body: JSON.stringify({'title': title, 'folder': folder.id})
             }
             ).then(function(response) {
                 buildTaskList();

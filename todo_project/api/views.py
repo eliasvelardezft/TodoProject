@@ -16,6 +16,7 @@ from .models import Task, Folder
 def apiOverview(request):
     api_urls = {
         'task-List': '/task-list/',
+        'tasks-from-folder': 'task-from-folder/<str:folder_id>',
         'task-Detail View': '/task-detail/<str:pk>',
         'task-Create': '/task-create/',
         'task-Update': '/task-update/<str:pk>',
@@ -34,6 +35,13 @@ def taskList(request):
     tasks = Task.objects.all().order_by('-id')
     serializer = TaskSerializer(tasks, many=True)
     
+    return Response(serializer.data)
+
+@api_view(['GET'])
+def tasksFromFolder(request, folder_id):
+    tasks = Task.objects.filter(folder=folder_id)
+    serializer = TaskSerializer(tasks, many=True)
+
     return Response(serializer.data)
 
 @api_view(['GET'])

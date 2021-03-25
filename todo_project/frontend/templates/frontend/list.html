@@ -102,7 +102,8 @@
         }
         .task-section {
             position: relative;
-            left: 600px;
+            top: 20px;
+            left: 360px;
         }
 
     </style>
@@ -118,7 +119,7 @@
                 <form id="folder-form">
                     <div class="folder-flex-wrapper">
                         <div style="flex: 6">
-                            <input id="folder-title" class="form-control" type="text" name="title" placeholder="Add folder">
+                            <input id="folder-title" class="form-control folder-form-title" type="text" name="title" placeholder="Add folder">
                         </div>
                         <div style="flex: 1">
                             <input id="folder-submit" class="btn" type="submit" >
@@ -135,6 +136,7 @@
     </div>
 
 
+    <!-- ******** Task folder section (populated in the script) ******** -->
     <div class="container task-section" id="task-section">
 
 
@@ -143,19 +145,18 @@
 
     <script type="text/javascript">
     
-        function buildTaskList() {
+        function buildTaskList(folder) {
             let wrapper = document.getElementById('list-wrapper');
-            //wrapper.innerHTML = '';
 
             let title = document.getElementById('title')
             title.value = '';
 
-            let url = 'http://127.0.0.1:8000/api/task-list/'
+            let url = `http://127.0.0.1:8000/api/tasks-from-folder/${folder.id}`
 
             fetch(url)
             .then((resp) => resp.json())
             .then(function(data) {
-                console.log("Data: ", data);
+                 console.log("Data: ", data);
 
                 let list = data;
 
@@ -195,11 +196,11 @@
                     wrapper.innerHTML += item;
                 }
 
-                if (task_list_snapshot.length > list.length){
-                    for(let i = list.length; i < task_list_snapshot.length; i++){
-                        document.getElementById(`task-row-${i}`).remove()
-                    }
-                }
+                // if (task_list_snapshot.length > list.length){
+                //     for(let i = list.length; i < task_list_snapshot.length; i++){
+                //         document.getElementById(`task-row-${i}`).remove()
+                //     }
+                // }
 
                 task_list_snapshot = list
 
@@ -215,7 +216,7 @@
                         deleteItem(list[i]);
                     });
                     checkBox.addEventListener('click', function(){
-                        strikeUnstrike(list[i]);
+                        strikeUnstrike(list[i], folder);
                     });
                 }
 
@@ -228,7 +229,7 @@
             document.getElementById('title').value = activeItem.title
         }
 
-        function deleteItem(item) {
+        function deleteItem(item, folder) {
             console.log('delete clicked: ', item.id)
 
             fetch(`http://127.0.0.1:8000/api/task-delete/${item.id}`, {
@@ -236,10 +237,10 @@
                 headers: {
                     'Content-type': 'application/json',
                 }
-            }).then((response) => buildTaskList())
+            }).then((response) => buildTaskList(folder))
         }
 
-        function strikeUnstrike(item){
+        function strikeUnstrike(item, folder){
             console.log(`item: ${item.id} striked-unstriked`);
 
             item.completed = !item.completed
@@ -249,38 +250,11 @@
                     'Content-type': 'application/json',
                 },
                 body: JSON.stringify({'title': item.title, 'completed': item.completed})
-            }).then((response) => buildTaskList())
+            }).then((response) => buildTaskList(folder))
         }
 
         let activeItem = null
         let task_list_snapshot = []
-
-        // let form = document.getElementById('form-wrapper')
-        // form.addEventListener('submit', function(e) {
-        //     e.preventDefault()
-        //     console.log('form submited')
-
-        //     let url = 'http://127.0.0.1:8000/api/task-create/'
-            
-        //     if (activeItem !== null) {
-        //         url = `http://127.0.0.1:8000/api/task-update/${activeItem.id}`
-        //         activeItem = null                 
-        //     }
-
-        //     let title = document.getElementById('title').value
-
-        //     fetch(url, {
-        //         method: 'POST',
-        //         headers: {
-        //             'Content-type': 'application/json',
-
-        //         },
-        //         body: JSON.stringify({'title': title})
-        //     }
-        //     ).then(function(response) {
-        //         buildTaskList();
-        //     })
-        // })
 
         // ********** Task folders section **********
 
@@ -308,11 +282,14 @@
 
                 for (let i in list) {
 
-                    try{
+                    if (document.getElementById(`folder-row-${i}`) !== null){
                         document.getElementById(`folder-row-${i}`).remove()
-                    }catch(err){
-
                     }
+                    // try{
+                    //     document.getElementById(`folder-row-${i}`).remove()
+                    // }catch(err){
+
+                    // }
 
                     let title = `<span class="folder-title">${list[i].title}</span>`
 
@@ -368,6 +345,7 @@
         }
 
         function viewFolderItems(folder){
+            let placeholder = `Add task to ${folder.title}`
             let section = document.getElementById('task-section')
             let wrapper = `
             <div id="task-container">
@@ -375,7 +353,7 @@
                 <form id="form">
                     <div class="flex-wrapper">
                         <div style="flex: 6">
-                            <input id="title" class="form-control" type="text" name="title" placeholder="Add task">
+                            <input id="title" class="form-control" type="text" name="title" placeholder="${placeholder}">
                         </div>
                         <div style="flex: 1">
                             <input id="submit" class="btn" type="submit" >
@@ -392,8 +370,12 @@
             section.innerHTML = wrapper;
             let form = document.getElementById('form-wrapper')
             form.addEventListener('submit', function(e) {
+        
+            // aca creo q va lo de borrar el text.value cuando hago submit
+
             e.preventDefault()
             console.log('form submited')
+
 
             let url = 'http://127.0.0.1:8000/api/task-create/'
             
@@ -413,10 +395,10 @@
                 body: JSON.stringify({'title': title, 'folder': folder.id})
             }
             ).then(function(response) {
-                buildTaskList();
+                buildTaskList(folder);
             })
         })
-            buildTaskList();
+            buildTaskList(folder);
         }
 
 
@@ -429,6 +411,9 @@
             e.preventDefault()
             console.log("folder submited")
 
+            let title = document.getElementById('folder-title').value
+            document.getElementsByClassName('folder-form-title')[0].value = ''
+
             let url = 'http://127.0.0.1:8000/api/folder-create/'
 
             if (activeFolder !== null){
@@ -436,7 +421,6 @@
                 activeFolder = null
             }
 
-            let title = document.getElementById('folder-title').value
 
             fetch(url, {
                 method: 'POST',

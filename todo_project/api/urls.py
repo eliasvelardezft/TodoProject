@@ -4,6 +4,7 @@ from . import views
 urlpatterns = [
     path('', views.apiOverview, name="api-overview"),
     path('task-list/', views.taskList, name='task-list'),
+    path('tasks-from-folder/<str:folder_id>', views.tasksFromFolder, name='tasks-from-folder'),
     path('task-detail/<str:pk>/', views.taskDetail, name='task-detail'),
     path('task-create/', views.taskCreate, name='task-create'),
     path('task-update/<str:pk>', views.taskUpdate, name='task-update'),
@@ -13,4 +14,5 @@ urlpatterns = [
     path('folder-create/', views.folderCreate, name='folder-create'),
     path('folder-update/<str:pk>', views.folderUpdate, name='folder-update'),
     path('folder-delete/<str:pk>', views.folderDelete, name='folder-delete'),
+    
 ]

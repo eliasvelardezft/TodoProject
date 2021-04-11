@@ -1,4 +1,4 @@
-# to-do
+# To-Do list app
 
 # Required to run the app:
 - python 3.8.5
